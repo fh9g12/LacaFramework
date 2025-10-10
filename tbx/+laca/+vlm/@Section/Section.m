@@ -22,15 +22,6 @@ classdef Section < laca.vlm.Base
         U = [];
         DoFs = nan;
     end
-    % properties(GetAccess = protected)
-    %     Nodes_cache;
-    %     Centroid_cache;
-    %     Midpoint_cache;
-    %     Normal_cache;
-    %     RingNodes_cache;
-    %     Collocation_cache;
-    % end
-    % properties(SetAccess = immutable)
     properties
         base_nodes;
         base_ringNodes;

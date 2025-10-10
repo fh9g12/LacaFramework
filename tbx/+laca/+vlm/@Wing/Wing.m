@@ -261,15 +261,11 @@ classdef Wing < laca.vlm.Base
             Vs = V(obj.Centroid);
             L = rho .* vecnorm(Vs)' .* obj.PanelSpan;
             Con = obj.Connectivity;
-            for i = 1:obj.NPanels
-                for j = 1:1
-                    if ~isnan(Con(j,i))
-                        L(i) = L(i).*(gamma(i)-gamma(Con(j,i)));
-                    elseif j == 1
-                        L(i) = L(i).*gamma(i);
-                    end
-                end
-            end
+
+            idx = ~isnan(Con(1,:));
+            gamma = obj.Gamma;
+            gamma(idx) = (gamma(idx)-gamma(Con(1,idx)));
+            L = L.*gamma;
         end
     end
 

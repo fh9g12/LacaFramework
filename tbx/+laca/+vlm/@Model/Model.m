@@ -41,7 +41,6 @@ classdef Model < laca.vlm.Base
         Centroid
         Panels
         Nodes
-        PanelNormal
         StripIDs
         isTE
         isLE
@@ -160,7 +159,8 @@ classdef Model < laca.vlm.Base
             val = cat(1,res{:});
         end
         function val = get.dC_l_dalpha(obj)
-            val = cat(1,obj.Wings.dC_l_dalpha);
+            res = cellfun(@(x)x.dC_l_dalpha,obj.Wings,'UniformOutput',false);
+            val = cat(1,res{:});
         end
         function val = get.StripIDs(obj)
             Con = obj.Connectivity;

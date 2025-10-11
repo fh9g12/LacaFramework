@@ -35,17 +35,17 @@ classdef Aircraft < handle
         
         function obj = Rz(obj,deg)
             if deg ~= 0 
-                obj.Rotate(fh.rotz(deg))
+                obj.Rotate(dcrg.rotzd(deg))
             end
         end
         function obj = Ry(obj,deg)
             if deg ~= 0 
-                obj.Rotate(fh.roty(deg))
+                obj.Rotate(dcrg.rotyd(deg))
             end
         end
         function obj = Rx(obj,deg)
             if deg ~= 0 
-                obj.Rotate(fh.rotx(deg))
+                obj.Rotate(dcrg.rotxd(deg))
             end
         end
         function out = draw(obj,varargin)

@@ -20,15 +20,15 @@ function obj = gen_FWT(flare,fold,wingtipTwist,isRight)
     if panel_normal(3)>0
         panel_normal = panel_normal*-1;
     end
-    hinge_axis = farg.geom.rotateAbout([1 0 0]',panel_normal,-flare);
+    hinge_axis = dcrg.geom.rotateAbout([1 0 0]',panel_normal,-flare);
     if hinge_axis(1)<0
         panel_normal = panel_normal*-1;
     end
 
-    newLE = farg.geom.plane_line_intersect(cross(hinge_axis,panel_normal)',...
+    newLE = dcrg.geom.plane_line_intersect(cross(hinge_axis,panel_normal)',...
         mean([LE(:,1),TE(:,1)]'),...
         LE(:,1)',LE(:,2)');
-    newTE = farg.geom.plane_line_intersect(cross(hinge_axis,panel_normal)',...
+    newTE = dcrg.geom.plane_line_intersect(cross(hinge_axis,panel_normal)',...
         mean([LE(:,1),TE(:,1)]'),...
         TE(:,1)',TE(:,2)');
 
@@ -37,8 +37,8 @@ function obj = gen_FWT(flare,fold,wingtipTwist,isRight)
 
     % rotate the wingtip
     N = size(LE,2)-1;
-    LE(:,2:end) = repmat(LE(:,1),1,N) + farg.geom.rotateAbout(LE(:,2:end)-repmat(LE(:,1),1,N),repmat(hinge_axis,1,N),-fold);
-    TE(:,2:end) = repmat(TE(:,1),1,N) + farg.geom.rotateAbout(TE(:,2:end)-repmat(TE(:,1),1,N),repmat(hinge_axis,1,N),-fold);    
+    LE(:,2:end) = repmat(LE(:,1),1,N) + dcrg.geom.rotateAbout(LE(:,2:end)-repmat(LE(:,1),1,N),repmat(hinge_axis,1,N),-fold);
+    TE(:,2:end) = repmat(TE(:,1),1,N) + dcrg.geom.rotateAbout(TE(:,2:end)-repmat(TE(:,1),1,N),repmat(hinge_axis,1,N),-fold);    
     
     if isRight
        Name = 'Right FWT';

@@ -44,16 +44,15 @@ vlm_model = laca.vlm.Model.From_laca_model(model,0.025,5,true);
 
 AoA = 5;
 Beta = 0;
-V_func = fh.roty(-AoA)*fh.rotz(-Beta)*[-20 0 0]';
+V_func = dcrg.rotyd(-AoA)*dcrg.rotzd(-Beta)*[-20 0 0]';
 V_dir = V_func./vecnorm(V_func);
 
 %% time get result (Katz)
 tic;
 for i = 1:nIters
 vlm_model = laca.vlm.Model.From_laca_model(model,0.025,5,true);
-vlm_model.Wings{1}.Rot = fh.rotx(45);
-vlm_model.Wings{end}.Rot = fh.rotx(-45);
-vlm_model.generate_rings();
+vlm_model.Wings{1}.Rot = dcrg.rotxd(45);
+vlm_model.Wings{end}.Rot = dcrg.rotxd(-45);
 end
 t = toc;
 show_result('Rect. Wing Katz Model Gen',nIters,t,false,false);
@@ -84,9 +83,8 @@ vlm_model = laca.vlm.Model.From_laca_model(model,0.025,5,true);
 for j = 1:4
     vlm_model.Wings{j} = laca.vlm.Wing(laca.vlm.stitch_sections([vlm_model.Wings{j}.Sections]));
 end
-vlm_model.Wings{1}.Rot = fh.rotx(45);
-vlm_model.Wings{end}.Rot = fh.rotx(-45);
-% vlm_model.generate_rings();
+vlm_model.Wings{1}.Rot = dcrg.rotxd(45);
+vlm_model.Wings{end}.Rot = dcrg.rotxd(-45);
 end
 t = toc;
 show_result('Katz Stitched Sections Gen',nIters,t,false,false);
@@ -118,9 +116,8 @@ vlm_model = laca.vlm.Model.From_laca_model(model,0.025,5,true);
 for j = 1:4
     vlm_model.Wings{j} = laca.vlm.Wing(laca.vlm.stitch_sections([vlm_model.Wings{j}.Sections]));
 end
-vlm_model.Wings{1}.Rot = fh.rotx(45);
-vlm_model.Wings{end}.Rot = fh.rotx(-45);
-vlm_model.generate_rings();
+vlm_model.Wings{1}.Rot = dcrg.rotxd(45);
+vlm_model.Wings{end}.Rot = dcrg.rotxd(-45);
 vlm_model.set_panel_filiments();
 end
 t = toc;

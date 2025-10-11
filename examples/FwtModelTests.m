@@ -27,13 +27,13 @@ axis equal
 %% gen vlm model
 AoA = 10;
 Beta = 0;
-V_func = fh.roty(-AoA)*fh.rotz(-Beta)*[-20 0 0]';
+V_func = dcrg.rotzd(-AoA)*dcrg.rotzd(-Beta)*[-20 0 0]';
 
 vlm_model = laca.vlm.Model.From_laca_model(model,0.02,5,false);
 
 % deflect wingtips
-vlm_model.Wings(1).Rot = fh.rotz(-Flare)*fh.rotx(Fold)*fh.rotz(Flare);
-vlm_model.Wings(end).Rot = fh.rotz(Flare)*fh.rotx(-Fold)*fh.rotz(-Flare);
+vlm_model.Wings(1).Rot = dcrg.rotzd(-Flare)*dcrg.rotxd(Fold)*dcrg.rotzd(Flare);
+vlm_model.Wings(end).Rot = dcrg.rotzd(Flare)*dcrg.rotxd(-Fold)*dcrg.rotzd(-Flare);
 
 f = figure(2);clf;
 vlm_model.draw
@@ -44,7 +44,6 @@ axis equal
 
 %% gen rings
 V_dir = V_func./vecnorm(V_func);
-vlm_model = vlm_model.generate_rings();
 vlm_model = vlm_model.generate_te_horseshoe(V_dir * 0.5);
 f = figure(3);clf;
 vlm_model.draw_rings
@@ -64,14 +63,14 @@ vlm_model = vlm_model.apply_result_katz(1.225);
 f = figure(4);clf;
 subplot(2,1,1)
 vlm_model = vlm_model.apply_result_katz(1.225);
-vlm_model.draw('param','Cp','Rotate',fh.rotz(90))
+vlm_model.draw('param','Cp','Rotate',dcrg.rotzd(90))
 f.CurrentAxes.ZDir = 'Reverse';
 ax = gca;
 ax.Clipping = 'off';
 axis equal
 subplot(2,1,2)
 vlm_model = vlm_model.apply_result_ring(1.225);
-vlm_model.draw('param','Cp','Rotate',fh.rotz(90))
+vlm_model.draw('param','Cp','Rotate',dcrg.rotzd(90))
 f.CurrentAxes.ZDir = 'Reverse';
 ax = gca;
 ax.Clipping = 'off';

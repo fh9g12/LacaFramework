@@ -13,7 +13,7 @@ for j = 1:N
             v_tmp = laca.vlm.vortex_ring(coords,col,1);
             v = v + [v_tmp(1);-v_tmp(2);v_tmp(3)];
         end
-        AIC(i,j) = dot(v,normal(:,i));
+        AIC(i,j) = v(1)*normal(1,i) + v(2)*normal(2,i) + v(3)*normal(3,i);
     end
 end
 
@@ -28,7 +28,7 @@ for i = 1:size(te_idx,1)
             v_tmp = laca.vlm.horseshoe(coords,col,1);
             v = v + [v_tmp(1);-v_tmp(2);v_tmp(3)];
         end
-        AIC(j,idx) = AIC(j,idx) + dot(v,normal(:,j));
+        AIC(j,idx) = AIC(j,idx) + (v(1)*normal(1,j) + v(2)*normal(2,j) + v(3)*normal(3,j));
     end
 end
 end

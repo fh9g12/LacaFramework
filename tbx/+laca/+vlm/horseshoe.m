@@ -3,10 +3,8 @@ function q = horseshoe(coords,p,gamma)
 %vortex specified by coords with strength gamma
 %   coords is a (3,4) matrix which are the N verticies of the ring in a
 %   clockwise order (start from LE inboard,e.g LE->LE->TE->TE)
-idx = [4,1,2,3];
-q = zeros(3,1);
-for i = 1:3
-   q = q + laca.vlm.vortex_line(coords(:,idx(i)),coords(:,idx(i+1)),p,gamma); 
-end
+q = laca.vlm.vortex_line(coords(:,1),coords(:,2),p,gamma);
+q = q + laca.vlm.semiinfinite_vortex_line(coords(:,1),coords(:,4),p,-gamma);
+q = q + laca.vlm.semiinfinite_vortex_line(coords(:,2),coords(:,3),p,gamma);
 end
 

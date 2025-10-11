@@ -29,7 +29,6 @@ figure(2);clf;vlm_model.draw;
 axis equal
 
 % generate VLM rings
-vlm_model.generate_rings();
 vlm_model.generate_te_horseshoe([-0.5 0 0]');
 figure(3);clf;vlm_model.draw_rings;
 axis equal
@@ -37,9 +36,8 @@ axis equal
 % test solver
 AoA = 5;
 Beta = 0;
-V_func = fh.roty(-AoA)*fh.rotz(-Beta)*[-20 0 0]';
+V_func = dcrg.rotyd(-AoA)*dcrg.rotzd(-Beta)*[-20 0 0]';
 V_dir = V_func./vecnorm(V_func);
-vlm_model.generate_rings();
 vlm_model.set_panel_filiments();
 vlm_model.generate_te_horseshoe(V_dir*5);
 
@@ -47,7 +45,7 @@ vlm_model.generate_AIC3D();
 vlm_model.solve(V_func);
 vlm_model.apply_result_katz(1.225);
 Wrench = vlm_model.get_forces_and_moments([-0.08*0.25,0,0]');
-F = (fh.roty(-AoA)*fh.rotz(-Beta))'*Wrench(1:3);
+F = (dcrg.rotyd(-AoA)*dcrg.rotzd(-Beta))'*Wrench(1:3);
 L_katz= F(3)
 
 f = figure(4);clf;
@@ -60,7 +58,7 @@ colorbar
 
 vlm_model.apply_result_ring(1.225);
 Wrench = vlm_model.get_forces_and_moments([-0.08*0.25,0,0]');
-F = (fh.roty(-AoA)*fh.rotz(-Beta))'*Wrench(1:3);
+F = (dcrg.rotyd(-AoA)*dcrg.rotzd(-Beta))'*Wrench(1:3);
 L_fil= F(3)
 
 f = figure(5);clf;

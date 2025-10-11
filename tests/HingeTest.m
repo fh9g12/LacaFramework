@@ -12,11 +12,10 @@ model = laca.model.Aircraft(wings);
 
 AoA = 3;
 Beta = 0;
-V_func = fh.roty(-AoA)*fh.rotz(-Beta)*[-20 0 0]';
+V_func = dcrg.rotyd(-AoA)*dcrg.rotzd(-Beta)*[-20 0 0]';
 V_dir = V_func./vecnorm(V_func);
 vlm_model = laca.vlm.Model.From_laca_model(model,0.5,1,true);
-vlm_model.Wings{2}.Rot = fh.rotz(flare)*fh.rotx(45)*fh.rotz(-flare);
-vlm_model.generate_rings();
+vlm_model.Wings{2}.Rot = dcrg.rotzd(flare)*dcrg.rotxd(45)*dcrg.rotzd(-flare);
 vlm_model.generate_te_horseshoe(V_dir*0.5);
 vlm_model.generate_AIC();
 vlm_model.solve(V_func);
@@ -43,8 +42,7 @@ ax.Clipping = 'off';
 axis equal
 
 vlm_model_2 = laca.vlm.Model.From_laca_model(model,0.5,3,true);
-vlm_model_2.Wings{2}.Rot = fh.rotz(flare)*fh.rotx(45)*fh.rotz(-flare);
-vlm_model_2.generate_rings();
+vlm_model_2.Wings{2}.Rot = dcrg.rotzd(flare)*dcrg.rotxd(45)*dcrg.rotzd(-flare);
 vlm_model_2.generate_te_horseshoe(V_dir*0.5);
 vlm_model_2.set_panel_filiments();
 

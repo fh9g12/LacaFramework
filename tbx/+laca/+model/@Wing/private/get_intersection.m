@@ -1,6 +1,6 @@
 function [int,idx] = get_intersection(line,point,normal)
-import farg.geom.IntersectType
-import farg.geom.plane_line_intersect
+import dcrg.geom.IntersectType
+import dcrg.geom.plane_line_intersect
     I = zeros(size(line,2)-1,3);
     check = IntersectType.empty;
     for j = 1:size(line,2)-1

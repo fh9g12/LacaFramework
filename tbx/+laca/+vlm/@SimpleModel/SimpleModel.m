@@ -71,8 +71,8 @@ classdef SimpleModel < laca.vlm.Base
             % calc effective velocity ateach Panel
 
             Vs = obj.V(obj.Collocation);
-            Vi = Vs + obj.Normal.*((obj.AIC-obj.AICi)*obj.Gamma)';
-            Vi = Vs;
+            Vi = Vs - obj.Normal.*((obj.AIC)*obj.Gamma)';
+            % Vi = Vs;
 
             % correct gammas for connected panels
             Con = obj.Connectivity;
@@ -260,7 +260,6 @@ classdef SimpleModel < laca.vlm.Base
                     collocation(2,:)',collocation(3,:)','xr');
             end
         end
-
     end
     methods(Static)
         function obj = from_model(fullModel)

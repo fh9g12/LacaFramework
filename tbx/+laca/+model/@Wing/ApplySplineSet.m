@@ -10,7 +10,7 @@ function out = ApplySplineSet(obj,structural_file,varargin)
     % the splines
     load(structural_file,'model')
     coords = model.GRID.getDrawCoords('Mode','undeformed');
-    coords = fh.roty(p.Results.Alpha) * fh.rotz(p.Results.Beta) * coords;
+    coords = dcrg.rotyd(p.Results.Alpha) * dcrg.rotzd(p.Results.Beta) * coords;
     [~,i_gid,i] =intersect(obj.GridIDs,model.GRID.GID);
     coords = coords(:,i);
     GIDs = obj.GridIDs(i_gid);

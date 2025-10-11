@@ -72,6 +72,7 @@ classdef SimpleModel < laca.vlm.Base
 
             Vs = obj.V(obj.Collocation);
             Vi = Vs + obj.Normal.*((obj.AIC-obj.AICi)*obj.Gamma)';
+            Vi = Vs;
 
             % correct gammas for connected panels
             Con = obj.Connectivity;
@@ -85,64 +86,63 @@ classdef SimpleModel < laca.vlm.Base
             % calculate vortex filiment direction
             A = obj.Nodes(:,obj.Panels(1,:));
             B = obj.Nodes(:,obj.Panels(2,:));
-            n = B-A;
+            v = B-A;
 
             % calculate local lift vector
-            obj.F = rho*cross(Vi,gamma_eff'.*n);
+            obj.F = (rho*cross(Vi,gamma_eff'.*v));
 
             %project in global lift direction
-            D_hat = Vs./vecnorm(Vs); 
-            obj.D = D_hat .* dot(obj.F,D_hat);
-            L_hat = cross(D_hat,n)./vecnorm(n);
-            obj.L = L_hat .* dot(obj.F,L_hat);
+            D_hat = Vs./vecnorm(Vs);
+            Di_hat = Vi./vecnorm(Vi);
+            obj.D = dot(obj.F,D_hat);
+            % get 'up'
+            idx = abs(atan2(v(3,:),v(2,:)))>pi/2;
+            L_hat = cross(D_hat,v);
+            L_hat = L_hat./vecnorm(L_hat);
+            Li_hat = cross(Di_hat,v);
+            Li_hat = Li_hat./vecnorm(Li_hat);
+            L_hat(:,idx) = -L_hat(:,idx);
+            Li_hat(:,idx) = -Li_hat(:,idx);
+            obj.L = dot(obj.F,L_hat);
+            obj.Lprime = obj.L./obj.PanelSpan';
+
+            n = obj.Normal;
+            n(:,idx) = -n(:,idx);
             % test = dot(obj.L,obj.D);
             % if any(abs(test) > ))
             %     warning('Lift and Drag not orthogonal')
             % end
-            obj.S = obj.F - obj.L - obj.D;
+            obj.S = obj.F - L_hat.*obj.L - D_hat.*obj.D;
 
             % calc normalised values
-            obj.P = -dot(obj.Normal,obj.F)'./obj.Area;
-            obj.Lprime = -dot(obj.Normal,obj.L)./obj.Area; 
+            obj.P = -dot(n,obj.F)'./obj.Area;
+
             q = (0.5*rho*vecnorm(Vs).^2)';
             obj.Cp = obj.P./q;
-            obj.Cl = obj.F(3,:)./(q.*obj.Area);
-            obj.Cd = obj.F(1,:)./(q.*obj.Area);
+            obj.Cl = (dot(obj.F,Li_hat)./(q.*obj.Area)')';
+            obj.Cd = (dot(obj.F,Di_hat)./(q.*obj.Area)')';
 
             obj.HasKatzResult = true;
         end
     end
 
     methods
-        function val = Get_Prop(obj,propName)
-            val = zeros(obj.NPanels,1);
-            idx = 1;
-            for i = 1:length(obj.Wings)
-                N = obj.Wings{i}.NPanels;
-                val(idx:idx+N-1) = obj.Wings{i}.(propName);
-                idx = idx + N;
-            end
-        end
         function val = Vbody(obj,U)
-            val = [];
-            for i = 1:length(obj.Wings)
-                val = [val,obj.Wings{i}.Vbody(U)];
-            end
+            error('Not implemented')
         end
         function res = get_forces_and_moments(obj,p)
             %get_forces_and_moments get forces and moments about point p
             if obj.HasKatzResult
-                L_wings = obj.Normal .* repmat(obj.Get_Prop('L')',3,1);
-                pos = obj.Collocation;
+                pos = (obj.RingNodes(:,obj.Panels(1,:))+obj.RingNodes(:,obj.Panels(2,:)))./2;
+                forces = obj.F;
             elseif obj.HasFilResult
-                L_wings = obj.Filiment_Force;
-                pos = laca.vlm.panel_compass(obj.Panels,obj.RingNodes);
+                error('Not implemented')
             else
                 error('No result')
             end
-            F_wings = sum(L_wings,2);
-            M = sum(cross(pos-p,L_wings),2);
-            res = [F_wings;M];
+            F_tot = sum(obj.F,2);
+            M = sum(cross(pos-p,forces),2);
+            res = [F_tot;M];
         end
         function obj = set_panel_filiments(obj)
             if obj.useMEX
@@ -294,7 +294,7 @@ classdef SimpleModel < laca.vlm.Base
             vals = [0,cumsum(cellfun(@(x)x.NPanels,fullModel.Wings))];
             obj.WingIDs = {};
             for i = 2:length(vals)
-                obj.WingIDs{i} = (vals(i-1)+1):vals(i);
+                obj.WingIDs{i-1} = (vals(i-1)+1):vals(i);
             end
         end
     end

@@ -263,7 +263,6 @@ classdef Wing < laca.vlm.Base
             Con = obj.Connectivity;
 
             idx = ~isnan(Con(1,:));
-            gamma = obj.Gamma;
             gamma(idx) = (gamma(idx)-gamma(Con(1,idx)));
             L = L.*gamma;
         end

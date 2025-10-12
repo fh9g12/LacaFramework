@@ -1,4 +1,4 @@
-classdef SimpleModel < laca.vlm.Base
+classdef SimpleModel < handle
     %MODEL Summary of this class goes here
     %   Detailed explanation goes here
 
@@ -14,7 +14,9 @@ classdef SimpleModel < laca.vlm.Base
 
         AIC;
         AICi;
+        AICw;
         AIC3D;
+        AICf;
 
         Gamma;
         V;
@@ -32,15 +34,25 @@ classdef SimpleModel < laca.vlm.Base
 
     properties(SetAccess = private)
         F;
+
         L;
         D;
         S;
 
-        Cp;
+        N;
+        
         Cl;
         Cd;
+        Cn;
+
         P;
+        Cp;
+
         Lprime;
+        Dprime;
+        Nprime;
+
+        G;
     end
     properties
         Filiment_tol = 0.2;
@@ -67,12 +79,14 @@ classdef SimpleModel < laca.vlm.Base
 
     % apply results
     methods
-        function obj = apply_result_katz(obj,rho)
+
+        function obj = apply_result_simple(obj,rho)
             % calc effective velocity ateach Panel
 
             Vs = obj.V(obj.Collocation);
-            Vi = Vs - obj.Normal.*((obj.AIC)*obj.Gamma)';
-            % Vi = Vs;
+            Us = laca.vlm.vecnorm(Vs);
+            Vis = obj.Normal.*(obj.AICi*obj.Gamma)';
+            Vi = Vs - Vis;
 
             % correct gammas for connected panels
             Con = obj.Connectivity;
@@ -81,46 +95,117 @@ classdef SimpleModel < laca.vlm.Base
 
             idx = ~isnan(Con(1,:));
             gamma_eff(idx) = (gamma(idx)-gamma(Con(1,idx)));
+
+            % calculate vortex filiment direction
+            A = obj.Nodes(:,obj.Panels(1,:));
+            B = obj.Nodes(:,obj.Panels(2,:));
+            v = B-A;
+            s = laca.vlm.vecnorm(v)';
+
+            % Calculate force using Kutta-Joukowski theorem with effective velocity
+            obj.F = -rho * laca.vlm.cross(Vi,gamma_eff'.*v);
+
+            % Simplified lift and drag using effective velocity directions
+            V_hat = Vs./Us;  % Effective velocity direction
+            obj.D = laca.vlm.dot(obj.F,V_hat)';
+            obj.Dprime = obj.D./s;
             
+            % Lift is perpendicular to both effective velocity and vortex filament
+            % This works for any surface orientation (horizontal wing, vertical tail, etc.)
+            L_hat = laca.vlm.cross(V_hat, v);  % Cross product of velocity and vortex direction
+            L_hat = L_hat ./ laca.vlm.vecnorm(L_hat);
+
+            % Check panel orientation and flip lift direction if needed
+            % This ensures lift direction is consistent with panel normal orientation
+            idx = abs(atan2(v(3,:),v(2,:)))>pi/2;
+            L_hat(:,idx) = -L_hat(:,idx);
+
+            obj.L = laca.vlm.dot(obj.F,L_hat)';
+            obj.Lprime = obj.L./s;
+
+            obj.G = -obj.Gamma;
+            obj.G(idx) = -obj.G(idx);
+
+            % Dynamic pressure based on effective velocity (accounts for induced effects)
+            q = (0.5*rho*Us.^2)';
+            
+            % Force coefficients using effective velocity
+            tmp = (q .* obj.Area);
+            obj.Cl = obj.L ./ tmp;
+            obj.Cd = obj.D ./ tmp;
+            % LD = obj.Cl./obj.Cd;
+
+            obj.HasKatzResult = true;
+        end
+
+        function obj = apply_result_katz(obj,rho)
+            % calc effective velocity ateach Panel
+
+            Vs = obj.V(obj.Collocation);
+            Us = laca.vlm.vecnorm(Vs);
+            Vis = obj.Normal.*(obj.AICi*obj.Gamma)';
+            Vi = Vs - Vis;
+
+            % correct gammas for connected panels
+            Con = obj.Connectivity;
+            gamma_eff = obj.Gamma;
+            gamma = obj.Gamma;
+
+            idx = ~isnan(Con(1,:));
+            gamma_eff(idx) = (gamma(idx)-gamma(Con(1,idx)));
 
             % calculate vortex filiment direction
             A = obj.Nodes(:,obj.Panels(1,:));
             B = obj.Nodes(:,obj.Panels(2,:));
             v = B-A;
 
-            % calculate local lift vector
-            obj.F = (rho*cross(Vi,gamma_eff'.*v));
+            % Calculate force using Kutta-Joukowski theorem with effective velocity
+            obj.F = -rho * laca.vlm.cross(Vi,gamma_eff'.*v);
 
-            %project in global lift direction
-            D_hat = Vs./vecnorm(Vs);
-            Di_hat = Vi./vecnorm(Vi);
-            obj.D = dot(obj.F,D_hat);
-            % get 'up'
+            % Simplified lift and drag using effective velocity directions
+            V_hat = Vs./Us;  % Effective velocity direction
+            obj.D = laca.vlm.dot(obj.F,V_hat)';
+            obj.Dprime = obj.D./obj.PanelSpan;
+            
+            % Lift is perpendicular to both effective velocity and vortex filament
+            % This works for any surface orientation (horizontal wing, vertical tail, etc.)
+            L_hat = laca.vlm.cross(V_hat, v);  % Cross product of velocity and vortex direction
+            L_hat = L_hat ./ laca.vlm.vecnorm(L_hat);
+            Li_hat = laca.vlm.cross(Vi,v);
+            Li_hat = Li_hat ./ laca.vlm.vecnorm(Li_hat);
+            
+            % Check panel orientation and flip lift direction if needed
+            % This ensures lift direction is consistent with panel normal orientation
             idx = abs(atan2(v(3,:),v(2,:)))>pi/2;
-            L_hat = cross(D_hat,v);
-            L_hat = L_hat./vecnorm(L_hat);
-            Li_hat = cross(Di_hat,v);
-            Li_hat = Li_hat./vecnorm(Li_hat);
             L_hat(:,idx) = -L_hat(:,idx);
             Li_hat(:,idx) = -Li_hat(:,idx);
-            obj.L = dot(obj.F,L_hat);
-            obj.Lprime = obj.L./obj.PanelSpan';
 
+            obj.L = laca.vlm.dot(obj.F,L_hat)';
+            obj.N = laca.vlm.dot(obj.F,Li_hat)';
+            obj.Lprime = obj.L./obj.PanelSpan;
+            obj.Nprime = laca.vlm.dot(obj.F,Li_hat)';
+
+            obj.G = -obj.Gamma;
+            obj.G(idx) = -obj.G(idx);
+
+            % Side force is the remaining component
+            obj.S = obj.F - L_hat.*obj.L';
+
+            % Pressure using panel normals
             n = obj.Normal;
-            n(:,idx) = -n(:,idx);
-            % test = dot(obj.L,obj.D);
-            % if any(abs(test) > ))
-            %     warning('Lift and Drag not orthogonal')
-            % end
-            obj.S = obj.F - L_hat.*obj.L - D_hat.*obj.D;
+            n(:,idx) = -n(:,idx); % Ensure normal is consistent with lift direction
+            obj.P = -laca.vlm.dot(n,obj.F)' ./ obj.Area;
 
-            % calc normalised values
-            obj.P = -dot(n,obj.F)'./obj.Area;
-
-            q = (0.5*rho*vecnorm(Vs).^2)';
-            obj.Cp = obj.P./q;
-            obj.Cl = (dot(obj.F,Li_hat)./(q.*obj.Area)')';
-            obj.Cd = (dot(obj.F,Di_hat)./(q.*obj.Area)')';
+            % Dynamic pressure based on effective velocity (accounts for induced effects)
+            q = (0.5*rho*Us.^2)';
+            obj.Cp = obj.P ./ q;
+            
+            % Force coefficients using effective velocity
+            tmp = (q .* obj.Area);
+            obj.Cl = obj.L ./ tmp;
+            obj.Cd = obj.D ./ tmp;
+            obj.Cn = obj.N ./ tmp;
+            % LD = obj.Cl./obj.Cd;
 
             obj.HasKatzResult = true;
         end
@@ -141,7 +226,7 @@ classdef SimpleModel < laca.vlm.Base
                 error('No result')
             end
             F_tot = sum(obj.F,2);
-            M = sum(cross(pos-p,forces),2);
+            M = sum(laca.vlm.cross(pos-p,forces),2);
             res = [F_tot;M];
         end
         function obj = set_panel_filiments(obj)

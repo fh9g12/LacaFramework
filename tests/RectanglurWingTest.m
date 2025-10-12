@@ -22,6 +22,8 @@ axis equal
 
 % convert to VLM model
 vlm_model = laca.vlm.Model.From_laca_model(model,0.025,5,true);
+vlm_model.XZ_sym = false;
+vlm_model.useMEX = true;
 figure(2);clf;vlm_model.draw;
 axis equal
 
@@ -60,6 +62,7 @@ L_fil= F(3);
 
 f = figure(5);clf;
 vlm_model.draw('param','P');
+% vlm_model.draw_rings();
 f.CurrentAxes.ZDir = 'Reverse';
 ax = gca;
 ax.Clipping = 'off';
@@ -69,6 +72,7 @@ colorbar
 
 %% ensure correct lift generated (Katz)
 tol = 1e-2;
+
 assert(abs(L_katz--10.401)<tol,'Incorrect Lift')
 
 %% ensure correct lift generated (Filiment)

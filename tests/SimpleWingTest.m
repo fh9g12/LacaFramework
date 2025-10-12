@@ -66,7 +66,7 @@ test_Normal = [0	0	0	0	0; 0	0	0	0	0;-1	-1	-1	-1	-1];
 %% ensure panel normals are correct
 assert(max(abs(vlm.Normal - test_Normal),[],'all')<1e-4,'Incorrect Normal Vectors')
 
-%% Check AIC MaCtrix
+%% Check AIC Matrix
 assert(max(abs(vlm.AIC*1e3 - test_AIC),[],'all')<1e-4,'Incorrect AIC Matric')
 
 %% Check calculated Gamma Vector
@@ -75,6 +75,28 @@ assert(max(abs(vlm.Gamma - test_Gamma),[],'all')<1e-4,'Incorrect Gamma Matrix')
 %% Check Total Lift produced
 assert(abs(L--3.7607)<tol,'Incorrect Lift')
 
+%% check model reduction
+vlm_s = laca.vlm.SimpleModel.from_model(vlm);
+vlm_s.generate_AIC();
+vlm_s.solve(V_func);
+vlm_s.apply_result_katz(1.225);
 
+Wrenchs = vlm_s.get_forces_and_moments([-2*0.25,2.5,0]');
+Fs = (dcrg.rotyd(-AoA)*dcrg.rotzd(-Beta))'*Wrench(1:3);
+Ls= F(3);
+f = figure(4);clf;
+vlm_s.draw('param','P');
+f.CurrentAxes.ZDir = 'Reverse';
+ax = gca;
+ax.Clipping = 'off';
+axis equal
+tol = 1e-2;
 
+%% Check AIC Matrix
+assert(max(abs(vlm.AIC - vlm_s.AIC),[],'all')<1e-4,'Incorrect AIC Matric')
 
+%% Check calculated Gamma Vector
+assert(max(abs(vlm.Gamma - vlm_s.Gamma),[],'all')<1e-4,'Incorrect Gamma Matrix')
+
+%% Check Total Lift produced
+assert(abs(L-Ls)<tol,'Incorrect Lift')

@@ -1,14 +1,19 @@
 function obj = generate_AIC(obj)
 % compute influence of wing panels
+As =(obj.RingNodes(:,obj.Panels(1,:)) + obj.RingNodes(:,obj.Panels(2,:)))./2;
 if obj.useMEX
     obj.AIC = laca.vlm.vlm_C_code('laca.vlm.generate_AIC',obj.Panels,...
         obj.RingNodes,obj.Collocation,obj.TERings,obj.TENodes,obj.TEidx,obj.XZ_sym);
-    obj.AICi = laca.vlm.vlm_C_code('laca.vlm.generate_self_AIC',obj.Panels,...
-        obj.RingNodes,obj.Collocation);
+    obj.AICw = laca.vlm.vlm_C_code('laca.vlm.generate_trefftz_AIC',obj.Panels,...
+        obj.RingNodes,obj.TERings,obj.TENodes,obj.TEidx,obj.XZ_sym); 
+    obj.AICi = laca.vlm.vlm_C_code('laca.vlm.generate_AIC',obj.Panels,...
+        obj.RingNodes,As,obj.TERings,obj.TENodes,obj.TEidx,obj.XZ_sym);
 else
     obj.AIC = laca.vlm.generate_AIC(obj.Panels,...
         obj.RingNodes,obj.Collocation,obj.TERings,obj.TENodes,obj.TEidx,obj.XZ_sym);
-    obj.AICi = laca.vlm.generate_self_AIC(obj.Panels,obj.RingNodes,obj.Collocation);
+    obj.AICw = laca.vlm.generate_trefftz_AIC(obj.Panels,...
+        obj.RingNodes,obj.TERings,obj.TENodes,obj.TEidx,obj.XZ_sym); 
+    obj.AICi = laca.vlm.generate_AIC(obj.Panels,...
+        obj.RingNodes,As,obj.TERings,obj.TENodes,obj.TEidx,obj.XZ_sym);
 end
 end
-

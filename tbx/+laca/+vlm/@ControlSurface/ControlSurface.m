@@ -1,4 +1,4 @@
-classdef ControlSurface < laca.vlm.Base
+classdef ControlSurface < handle
     %CONTROLSURFACE Summary of this class goes here
     %   Detailed explanation goes here
     

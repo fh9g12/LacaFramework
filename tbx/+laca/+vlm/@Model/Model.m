@@ -1,4 +1,4 @@
-classdef Model < laca.vlm.Base
+classdef Model < handle
     %MODEL Summary of this class goes here
     %   Detailed explanation goes here
 
@@ -350,7 +350,10 @@ classdef Model < laca.vlm.Base
                     collocation(2,:)',collocation(3,:)','xr');
             end
         end
-
+        
+        function md = Simplify(obj);
+            md = laca.vlm.SimpleModel.from_model(obj);
+        end
     end
     methods(Static)
         function obj = From_laca_model(lacaModel,minSpan,NChord,ignoreControlSurf)

@@ -215,17 +215,22 @@ classdef SimpleModel < handle
         function val = Vbody(obj,U)
             error('Not implemented')
         end
-        function res = get_forces_and_moments(obj,p)
+        function res = get_forces_and_moments(obj,p,IDs)
+            arguments
+                obj
+                p
+                IDs = 1:obj.NPanels;
+            end
             %get_forces_and_moments get forces and moments about point p
             if obj.HasKatzResult
-                pos = (obj.RingNodes(:,obj.Panels(1,:))+obj.RingNodes(:,obj.Panels(2,:)))./2;
-                forces = obj.F;
+                pos = (obj.RingNodes(:,obj.Panels(1,IDs))+obj.RingNodes(:,obj.Panels(2,IDs)))./2;
+                forces = obj.F(:,IDs);
             elseif obj.HasFilResult
                 error('Not implemented')
             else
                 error('No result')
             end
-            F_tot = sum(obj.F,2);
+            F_tot = sum(forces,2);
             M = sum(laca.vlm.cross(pos-p,forces),2);
             res = [F_tot;M];
         end
